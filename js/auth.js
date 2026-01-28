@@ -38,29 +38,64 @@ function initAuth() {
         const form = document.getElementById('loginForm');
         form.onsubmit = async (e) => {
             e.preventDefault();
-            const username = form.username.value;
+            const email = form.email.value;
             const password = form.password.value;
-            await login(username, password);
+            await login(email, password);
         };
     }
 }
 
-async function login(username, password) {
-    try {
-        const users = await api.get('users');
-        const user = users.find(u => u.username === username && u.password === password);
+const MANUAL_ADMIN = {
+    email: 'admin@lunara.com',
+    password: '12345' // <-- Set your manual admin password here
+};
 
-        if (user) {
+async function login(email, password) {
+    try {
+        let response;
+
+        // 1. Clean Inputs
+        const cleanEmail = email.trim().toLowerCase();
+        const cleanPassword = password.trim();
+
+        // 2. Check for Manual Admin (Bypass API)
+        if (cleanEmail === MANUAL_ADMIN.email.toLowerCase() && cleanPassword === MANUAL_ADMIN.password) {
+            response = {
+                name: 'Administrator',
+                email: cleanEmail,
+                role: 'admin',
+                token: 'manual-admin-token'
+            };
+        } else {
+            // 3. Everrest API Login
+            const payload = { email: cleanEmail, password: cleanPassword }; // Send cleaned data
+            response = await api.post('https://api.everrest.educata.dev/auth/signin', payload);
+        }
+
+        if (response) {
+            // Save the entire response (tokens + user info if available)
+            // If the API only returns a token, we might need to decode it or fetch profile later.
+            // For now, we assume success means we are logged in.
+            // We'll augment the saved user with the email since we have it.
+            const user = { ...response, email };
+
+            // Simple Admin Check based on email (temporary until roles are strictly defined in API)
+            // Or if API returns generic role
+            if (response.role) {
+                user.role = response.role;
+            } else if (email.includes('admin')) {
+                user.role = 'admin'; // Fallback for testing/demo
+            }
+
             localStorage.setItem(AUTH_KEY, JSON.stringify(user));
-            alert(`Welcome back, ${user.name}!`);
+            alert(`Welcome back!`);
             document.getElementById('loginModal').style.display = 'none';
             updateAuthUI();
-            location.reload(); // Reload to refresh UI (e.g. show Admin buttons)
-        } else {
-            alert('Invalid username or password');
+            location.reload();
         }
     } catch (error) {
-        alert('Login failed. Please try again.');
+        console.error(error);
+        alert('Login failed. Please check your credentials.');
     }
 }
 
@@ -88,7 +123,8 @@ function updateAuthUI() {
     authLi.id = 'authLi';
 
     if (user) {
-        authLi.innerHTML = `<a href="#" id="logoutBtn" style="color: #d6749d;">Logout (${user.username})</a>`;
+        const displayName = user.username || user.name || user.email || 'User';
+        authLi.innerHTML = `<a href="#" id="logoutBtn" style="color: #d6749d;">Logout (${displayName})</a>`;
     } else {
         authLi.innerHTML = `<a href="#" id="loginBtn">Login</a>`;
     }
@@ -107,8 +143,8 @@ function injectLoginModal() {
             <h2 style="text-align:center; color: #682d3b;">Login</h2>
             <form id="loginForm">
                 <div class="form-group">
-                    <label>Username</label>
-                    <input type="text" name="username" required>
+                    <label>Email</label>
+                    <input type="email" name="email" required>
                 </div>
                 <div class="form-group">
                     <label>Password</label>

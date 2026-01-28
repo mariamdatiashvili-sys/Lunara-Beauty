@@ -1586,3 +1586,47 @@ footer {
 .price-input {
   -moz-appearance: textfield;
 }
+
+.btn-add-service {
+  background: linear-gradient(135deg, #c88b8b 0%, #a66f6f 100%);
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(200, 139, 139, 0.4);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-add-service:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(200, 139, 139, 0.6);
+  background: linear-gradient(135deg, #d49898 0%, #b77979 100%);
+}
+
+.btn-cart {
+  background: #fff;
+  color: #c88b8b;
+  border: 1px solid #c88b8b;
+  padding: 10px 25px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 15px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.btn-cart:hover {
+  background: #c88b8b;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(200, 139, 139, 0.3);
+}

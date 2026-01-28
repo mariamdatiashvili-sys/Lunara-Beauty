@@ -60,7 +60,7 @@ function injectControls() {
     if (isAdmin(user)) {
         const adminBtnWrapper = document.createElement('div');
         adminBtnWrapper.innerHTML = `
-            <button id="addServiceBtn" class="btn btn-primary" style="background-color:#17B978; border-color:#17B978;">+ Add New Service</button>
+            <button id="addServiceBtn" class="btn-add-service"><i class="fas fa-plus"></i> Add New Service</button>
         `;
         controlsContainer.appendChild(adminBtnWrapper);
     }
@@ -177,24 +177,29 @@ function renderServices(services) {
     services.forEach(service => {
         const card = document.createElement('div');
         card.className = 'service-box fade-up';
+        card.style.position = 'relative'; // Ensure absolute positioning works for icons
 
-        // Admin Buttons (Edit/Delete)
-        let adminBtns = '';
+        // Admin Icons (Edit/Delete)
+        let adminControls = '';
+        let cartBtn = `<button class="btn-cart" onclick="addToCart('${service.name}', ${service.price})" style="margin-top: 10px;">Add to Cart</button>`;
+
         if (adminMode) {
-            adminBtns = `
-            <div style="margin-top:15px; border-top:1px solid #eee; padding-top:10px; display:flex; gap:10px; justify-content:center;">
-                <button onclick="editService('${service.id}')" style="background:#8797EE; color:white; border:none; padding:5px 10px; border-radius:4px; font-size:12px;">Edit</button>
-                <button onclick="deleteService('${service.id}')" style="background:#FD6A7E; color:white; border:none; padding:5px 10px; border-radius:4px; font-size:12px;">Delete</button>
+            adminControls = `
+            <div style="position:absolute; top:15px; right:15px; display:flex; gap:12px;">
+                <i class="fas fa-edit" onclick="editService('${service.id}')" style="color:#c88b8b; cursor:pointer; font-size:18px;" title="Edit"></i>
+                <i class="fas fa-times" onclick="deleteService('${service.id}')" style="color:#b75c83; cursor:pointer; font-size:20px;" title="Delete"></i>
             </div>
             `;
+            // Hide Cart Button for Admin
+            cartBtn = '';
         }
 
         card.innerHTML = `
+            ${adminControls}
             <h3>${service.name}</h3>
             <p>${service.description || 'No description available.'}</p>
             <button class="price">${service.duration} • GEL ${service.price}</button>
-            <button class="btn-cart" onclick="addToCart('${service.name}', ${service.price})" style="margin-left: 10px;">Add to Cart</button>
-            ${adminBtns}
+            ${cartBtn}
         `;
         grid.appendChild(card);
     });
@@ -290,6 +295,10 @@ function getCurrentUser() {
 
 function isAdmin(user) {
     if (!user) return false;
-    return (user.role && user.role.toLowerCase() === 'admin') ||
-        (user.username && user.username.toLowerCase() === 'admin');
+    // Check Role OR Username OR Email (for manual admin)
+    if (user.role && user.role.toLowerCase() === 'admin') return true;
+    if (user.username && user.username.toLowerCase() === 'admin') return true;
+    if (user.email && (user.email.toLowerCase() === 'admin@lunara.com' || user.email.includes('admin'))) return true;
+
+    return false;
 }

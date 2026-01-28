@@ -78,10 +78,35 @@ function initModalEvents() {
     });
 
     // Form submission
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        alert(`Booking request for ${serviceInput.value} sent! We will contact you shortly.`);
-        modal.style.display = 'none';
-        form.reset();
+
+        const btn = form.querySelector('button[type="submit"]');
+        const originalText = btn.textContent;
+        btn.textContent = 'Sending...';
+        btn.disabled = true;
+
+        const bookingData = {
+            service: serviceInput.value,
+            date: document.getElementById('bookingDate').value,
+            time: document.getElementById('bookingTime').value,
+            clientName: document.getElementById('clientName').value,
+            clientPhone: document.getElementById('clientPhone').value,
+            createdAt: new Date().toISOString()
+        };
+
+        try {
+            // Assuming 'bookings' resource exists in MockAPI
+            await api.post('bookings', bookingData);
+            alert(`Booking confirmed for ${bookingData.service}! We will see you on ${bookingData.date} at ${bookingData.time}.`);
+            modal.style.display = 'none';
+            form.reset();
+        } catch (error) {
+            console.error(error);
+            alert('Failed to save booking. Please try again or contact us directly.');
+        } finally {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }
     });
 }

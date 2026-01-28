@@ -8,7 +8,8 @@ const API_BASE_URL = "https://696bd26e624d7ddccaa22077.mockapi.io/api/v1";
 const api = {
     // Generic request helper
     async request(endpoint, method = 'GET', data = null) {
-        const url = `${API_BASE_URL}/${endpoint}`;
+        // Check if endpoint is an absolute URL
+        const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}/${endpoint}`;
         const options = {
             method,
             headers: {
